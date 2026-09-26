@@ -1,0 +1,56 @@
+# Environment files and credentials. Commit only explicit templates.
+.env
+.env.*
+!.env.example
+!.env.*.example
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.*.example
+
+# Secrets and local certificates
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+dist/
+coverage/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Go build outputs
+/backend/api
+/backend/*.exe
+/backend/*.test
+
+# Python caches and virtual environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local databases, uploads, and biometric material
+*.sqlite
+*.sqlite3
+*.db
+*.sql.bak
+uploads/
+storage/
+biometric-data/
+face-data/
+
+# Logs, temporary files, and OS/editor noise
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
