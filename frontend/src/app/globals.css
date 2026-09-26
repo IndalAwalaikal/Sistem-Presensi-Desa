@@ -1,0 +1,555 @@
+@import "tailwindcss";
+
+/*
+ * ============================================================================
+ * "Lembar Register Anabanua" — token desain
+ * ============================================================================
+ * Aplikasi ini diperlakukan sebagai buku register desa: sampul bukram hijau
+ * dengan cetakan emas, dan lembar folio di atas meja kerja. Karena itu ada TIGA
+ * permukaan, bukan satu:
+ *
+ *   sampul → sidebar, header, hero (hijau dalam + cetak kontur)
+ *   meja  → latar aplikasi, tempat lembar diletakkan
+ *   folio → lembar isi: kartu, panel, kertas
+ *
+ * Nilai di :root adalah SATU-SATUNYA sumber warna dan ukuran. @theme di bawah
+ * hanya menerjemahkannya menjadi utilitas Tailwind — jangan menulis hex mentah
+ * di komponen.
+ * ============================================================================
+ */
+:root {
+  /* Permukaan */
+  --ds-sampul: #0f3320;
+  --ds-sampul-2: #17492c;
+  --ds-sampul-garis: #2a5c3e;
+  --ds-meja: #e6e7e0;
+  --ds-meja-2: #dcded3;
+  --ds-folio: #fcfcfa;
+  --ds-folio-2: #f4f5ef;
+  --ds-putih: #ffffff;
+
+  /* Tinta dan garis rambut */
+  --ds-tinta: #0f172a;
+  --ds-tinta-2: #334155;
+  --ds-garis: #cbd5e1;
+  --ds-garis-folio: #e2e8f0;
+
+  /* Warna jabatan */
+  --ds-primer: #177a45;
+  --ds-primer-terang: #1e9256;
+  --ds-primer-gelap: #0f5c33;
+  --ds-emas: #b08b34;
+  --ds-emas-terang: #d5ae5b;
+
+  /* Warna status — hanya untuk status, tidak pernah untuk brand */
+  --ds-bahaya: #b3352c;
+  --ds-peringatan: #96650f;
+  --ds-info: #2b6cb0;
+
+  /*
+   * Tangga lengkung. Sebelumnya seluruh aplikasi memakai satu radius yang
+   * sama (rounded-md/rounded-lg) sehingga terasa datar dan seragam. Kini tiap
+   * ukuran punya peran: tanda, kendali, slip, lembar.
+   */
+  --ds-radius-tanda: 6px;
+  --ds-radius-kendali: 10px;
+  --ds-radius-slip: 14px;
+  --ds-radius-lembar: 20px;
+
+  /*
+   * Ketebalan lembar: bayangan bertumpuk plus garis potong kertas di tepi
+   * bawah. Satu bayangan lemah (alpha 0.06) tidak terbaca sama sekali di atas
+   * meja — itulah sebabnya antarmuka sebelumnya terasa rata.
+   */
+  --ds-naik-slip: inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 1px 0 var(--ds-garis-folio), 0 1px 2px rgba(28, 36, 48, 0.05),
+    0 7px 16px -11px rgba(28, 36, 48, 0.35);
+  --ds-naik-lembar: inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 1px 0 var(--ds-garis-folio), 0 2px 4px rgba(28, 36, 48, 0.05),
+    0 14px 28px -18px rgba(28, 36, 48, 0.4),
+    0 40px 64px -52px rgba(28, 36, 48, 0.55);
+  --ds-naik-sampul: inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 20px 44px -24px rgba(9, 26, 16, 0.8);
+  --ds-turun-kendali: inset 0 1px 2px rgba(28, 36, 48, 0.07);
+}
+
+@theme inline {
+  --color-sampul: var(--ds-sampul);
+  --color-sampul-2: var(--ds-sampul-2);
+  --color-sampul-garis: var(--ds-sampul-garis);
+  --color-meja: var(--ds-meja);
+  --color-meja-2: var(--ds-meja-2);
+  --color-folio: var(--ds-folio);
+  --color-folio-2: var(--ds-folio-2);
+  --color-putih: var(--ds-putih);
+
+  --color-tinta: var(--ds-tinta);
+  --color-tinta-2: var(--ds-tinta-2);
+  --color-garis: var(--ds-garis);
+  --color-garis-folio: var(--ds-garis-folio);
+
+  --color-primer: var(--ds-primer);
+  --color-primer-terang: var(--ds-primer-terang);
+  --color-primer-gelap: var(--ds-primer-gelap);
+  --color-emas: var(--ds-emas);
+  --color-emas-terang: var(--ds-emas-terang);
+
+  --color-bahaya: var(--ds-bahaya);
+  --color-peringatan: var(--ds-peringatan);
+  --color-info: var(--ds-info);
+
+  --radius-tanda: var(--ds-radius-tanda);
+  --radius-kendali: var(--ds-radius-kendali);
+  --radius-slip: var(--ds-radius-slip);
+  --radius-lembar: var(--ds-radius-lembar);
+
+  /* Ketebalan terdaftar sebagai utilitas: shadow-slip, shadow-lembar, dst. */
+  --shadow-turun: var(--ds-turun-kendali);
+  --shadow-slip: var(--ds-naik-slip);
+  --shadow-lembar: var(--ds-naik-lembar);
+  --shadow-sampul: var(--ds-naik-sampul);
+
+  /* Font peran: display (surat resmi), body (antarmuka), instrumen (mono) */
+  --font-display: var(--font-serif), "Source Serif 4", Georgia, serif;
+  --font-sans: var(--font-public-sans), "Public Sans", ui-sans-serif, sans-serif;
+  --font-mono: var(--font-plex-mono), "IBM Plex Mono", ui-monospace, monospace;
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: var(--ds-meja);
+  color: var(--ds-tinta);
+}
+
+/* Fokus keyboard: garis ganda resmi */
+:focus-visible {
+  outline: 2px solid var(--ds-primer);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--ds-primer);
+  color: var(--ds-putih);
+}
+
+@layer components {
+  /* ------------------------------------------------------------- permukaan */
+
+  /* Slip: kartu kecil di atas lembar. Tepi potong kertas + kilau atas. */
+  .slip {
+    position: relative;
+    border: 1px solid var(--ds-garis-folio);
+    border-radius: var(--ds-radius-slip);
+    background: linear-gradient(180deg, var(--ds-putih) 0%, var(--ds-folio) 100%);
+    box-shadow: var(--ds-naik-slip);
+  }
+
+  /* Lembar: kertas penuh — halaman, hero, layar hasil. */
+  .folio {
+    position: relative;
+    border: 1px solid var(--ds-garis-folio);
+    border-radius: var(--ds-radius-lembar);
+    background: linear-gradient(180deg, var(--ds-putih) 0%, var(--ds-folio) 100%);
+    box-shadow: var(--ds-naik-lembar);
+  }
+
+  /* Sampul bukram: bidang hijau gelap dengan kesan kain bertekanan. */
+  .bukram {
+    position: relative;
+    background:
+      radial-gradient(120% 90% at 80% -10%, var(--ds-sampul-2) 0%, transparent 62%),
+      linear-gradient(180deg, var(--ds-sampul) 0%, #0b2a1a 100%);
+    box-shadow: var(--ds-naik-sampul);
+  }
+
+  /* ------------------------------------------------------------ tipografi */
+
+  /* Label arsip: mono, kapital, berjarak — untuk meta dan penanda bidang. */
+  .label-arsip {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ds-tinta-2);
+  }
+
+  /* Angka ukur: mono tabular — waktu, jarak, skor, NIP. */
+  .angka-ukur {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "zero" 1;
+    letter-spacing: -0.01em;
+  }
+
+  /* ---------------------------------------------------------------- aksen */
+
+  /* Garis emas foil: kilau dua henti, dipakai sangat hemat. */
+  .garis-foil {
+    background: linear-gradient(
+      90deg,
+      var(--ds-emas) 0%,
+      var(--ds-emas-terang) 55%,
+      var(--ds-emas) 100%
+    );
+  }
+
+  /* Garis rambut kepala berkas — memudar dari emas ke kertas. */
+  .garis-kepala {
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      var(--ds-emas) 0%,
+      var(--ds-garis) 38%,
+      var(--ds-garis-folio) 100%
+    );
+  }
+
+  /*
+   * Kepala berkas: pita judul di atas slip. Hanya sisi atas yang melengkung
+   * agar terbaca sebagai tab yang menempel di tepi lembar, bukan kartu baru.
+   */
+  .kepala-berkas {
+    border-radius: var(--ds-radius-slip) var(--ds-radius-slip) 0 0;
+    background: linear-gradient(180deg, var(--ds-folio-2) 0%, var(--ds-putih) 100%);
+  }
+
+  /*
+   * Chevron dropdown digambar sebagai latar agar Select tetap satu elemen dan
+   * lebarnya tetap sama dengan bidang isian lain.
+   */
+  .bidang-pilih {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%235a6470' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8.5 10 12.5l4-4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
+    background-size: 1rem 1rem;
+  }
+
+  /*
+   * Punggung buku: halaman kiri melempar bayangan ke tengah, halaman kanan
+   * menerima cahaya tipis di tepinya. Dipakai di halaman masuk supaya dua
+   * panel terbaca sebagai satu lembar terbuka, bukan dua kartu berdempet.
+   *
+   * Hanya berlaku dari lebar lg: di ponsel halaman gambar tidak ditampilkan,
+   * jadi bayangan punggung akan tampak sebagai garis gelap yang salah tempat.
+   */
+  @media (min-width: 1024px) {
+    .punggung::after {
+      content: "";
+      position: absolute;
+      inset-block: 0;
+      right: 0;
+      width: 1.5rem;
+      pointer-events: none;
+      background: linear-gradient(
+        90deg,
+        rgba(28, 36, 48, 0) 0%,
+        rgba(28, 36, 48, 0.14) 72%,
+        rgba(28, 36, 48, 0.3) 100%
+      );
+    }
+
+    .punggung-luar::before {
+      content: "";
+      position: absolute;
+      inset-block: 0;
+      left: 0;
+      width: 1.25rem;
+      pointer-events: none;
+      background: linear-gradient(
+        90deg,
+        rgba(28, 36, 48, 0.12) 0%,
+        rgba(28, 36, 48, 0) 100%
+      );
+    }
+  }
+}
+
+/* Denyut halus untuk titik pengguna pada ring geofence */
+@keyframes denyut-ring {
+  0% { transform: scale(1); opacity: 0.5; }
+  70% { transform: scale(1.35); opacity: 0; }
+  100% { transform: scale(1.35); opacity: 0; }
+}
+
+.ring-denyut {
+  animation: denyut-ring 2.4s ease-out infinite;
+  transform-origin: center;
+}
+
+/* Lembar "mendarat" sekali saat halaman dibuka — bukan animasi berulang. */
+@keyframes lembar-mendarat {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.lembar-mendarat {
+  animation: lembar-mendarat 0.34s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+/*
+ * Cap hasil presensi. Gerakannya satu kali saja dan mengikuti kiasan buku
+ * register: tirai memudar, kertas mendarat, cincin stempel mencetak, tanda
+ * tergores, lalu isinya naik satu per satu.
+ *
+ * Semua keadaan *tanpa* animasi adalah keadaan akhir (cincin penuh, tanda
+ * tergores, isi tampak), jadi `prefers-reduced-motion` hanya menghapus
+ * geraknya — bukan isinya.
+ */
+@keyframes tirai-muncul {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.tirai-hasil {
+  animation: tirai-muncul 0.22s ease-out both;
+}
+
+@keyframes kartu-cap {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(0) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.kartu-cap {
+  animation: kartu-cap 0.42s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+/* Cincin stempel: kelilingnya digambar dari satu titik seperti ditekan. */
+@keyframes cincin-cetak {
+  from { stroke-dashoffset: 339.3; }
+  to { stroke-dashoffset: 0; }
+}
+
+.cap-cincin {
+  stroke-dasharray: 339.3;
+  stroke-dashoffset: 0;
+  animation: cincin-cetak 0.44s 0.08s ease-out both;
+}
+
+/* Cincin emas foil di luar cap — hanya untuk presensi yang diterima. */
+@keyframes cincin-emas-cetak {
+  from { stroke-dashoffset: 414.7; }
+  to { stroke-dashoffset: 0; }
+}
+
+.cap-cincin-emas {
+  stroke-dasharray: 414.7;
+  stroke-dashoffset: 0;
+  animation: cincin-emas-cetak 0.72s 0.18s ease-out both;
+}
+
+/* Tanda centang / silang: tergores setelah cincinnya mengunci. */
+@keyframes tanda-gores {
+  from { stroke-dashoffset: var(--panjang-tanda, 67); }
+  to { stroke-dashoffset: 0; }
+}
+
+.cap-tanda {
+  stroke-dasharray: var(--panjang-tanda, 67);
+  stroke-dashoffset: 0;
+  animation: tanda-gores 0.3s 0.4s ease-out both;
+}
+
+/* Stempel ditekan: datang sedikit lebih besar dan miring, lalu mengunci. */
+@keyframes cap-tekan {
+  0% {
+    opacity: 0;
+    transform: scale(1.45) rotate(-7deg);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(0.97) rotate(1deg);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.cap-tekan {
+  animation: cap-tekan 0.38s ease-out both;
+}
+
+/* Tinta menyebar dari bawah cap: dua bulatan tipis melebar lalu hilang. */
+@keyframes tinta-sebar {
+  0% {
+    transform: scale(0.74);
+    opacity: 0.5;
+  }
+  70% {
+    transform: scale(1.16);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.16);
+    opacity: 0;
+  }
+}
+
+.cap-tinta {
+  transform-origin: center;
+  animation: tinta-sebar 0.95s 0.3s ease-out both;
+}
+
+/* Cap ditolak: cincinnya bergentar sebentar, seperti stempel yang meleset. */
+@keyframes cap-gentar {
+  0% { transform: translateX(0); }
+  18% { transform: translateX(-7px); }
+  36% { transform: translateX(6px); }
+  54% { transform: translateX(-4px); }
+  72% { transform: translateX(3px); }
+  100% { transform: translateX(0); }
+}
+
+.cap-gentar {
+  animation: cap-gentar 0.42s 0.22s ease-in-out both;
+}
+
+/* Kilau emas melintas sekali di tepi kartu — hanya untuk cap diterima.
+   Persentase translate dihitung dari lebar pita (1/3 kartu), jadi lintasannya
+   harus melewati ~420% agar benar-benar keluar dari sisi kanan. */
+@keyframes kilau-lintas {
+  from { transform: translateX(-170%); }
+  to { transform: translateX(420%); }
+}
+
+.kilau-hasil {
+  animation: kilau-lintas 0.85s 0.34s ease-in-out both;
+}
+
+/* Isi kartu naik berurutan; jeda tiap baris diatur `animationDelay` pemanggil. */
+@keyframes isi-naik {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.isi-naik {
+  animation: isi-naik 0.3s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+/* Garis tipis penanda cap akan menutup sendiri; durasinya dari pemanggil. */
+@keyframes garis-jalan {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+.garis-jalan {
+  transform-origin: left center;
+  animation: garis-jalan linear both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ring-denyut,
+  .lembar-mendarat,
+  .tirai-hasil,
+  .kartu-cap,
+  .cap-cincin,
+  .cap-cincin-emas,
+  .cap-tanda,
+  .cap-tekan,
+  .cap-tinta,
+  .cap-gentar,
+  .kilau-hasil,
+  .isi-naik,
+  .garis-jalan {
+    animation: none;
+  }
+}
+
+/* Scrollbar tipis untuk panel panjang */
+.scroll-halus::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scroll-halus::-webkit-scrollbar-thumb {
+  background: var(--ds-garis);
+  border-radius: 999px;
+}
+
+/* ==========================================================================
+   PENINGKATAN KONTRAS & KETERBACAAN TEKS (Aksesibilitas Kontras Tinggi)
+   Mencegah teks sekunder/abu-abu menjadi pudar atau sulit dibaca.
+   ========================================================================== */
+
+body [class*="text-tinta/25"],
+body [class*="text-tinta/30"],
+body [class*="text-tinta/35"],
+body [class*="text-tinta/40"],
+body .text-tinta\/25,
+body .text-tinta\/30,
+body .text-tinta\/35,
+body .text-tinta\/40 {
+  color: #475569; /* Slate-600: kontras jelas & tegas */
+}
+
+body [class*="text-tinta/45"],
+body [class*="text-tinta/50"],
+body [class*="text-tinta/55"],
+body .text-tinta\/45,
+body .text-tinta\/50,
+body .text-tinta\/55 {
+  color: #334155; /* Slate-700: abu-abu gelap berbobot */
+}
+
+body [class*="text-tinta/60"],
+body [class*="text-tinta/65"],
+body [class*="text-tinta/70"],
+body .text-tinta\/60,
+body .text-tinta\/65,
+body .text-tinta\/70 {
+  color: #1e293b; /* Slate-800: hampir hitam pekat */
+}
+
+/* Placeholder input agar tidak terlalu pudar */
+input::placeholder,
+textarea::placeholder,
+body [class*="placeholder:text-tinta/30"]::placeholder,
+body [class*="placeholder:text-tinta/40"]::placeholder {
+  color: #64748b; /* Slate-500: terlihat jelas saat kosong */
+  opacity: 1;
+}
+
+/* Teks putih redup di atas latar gelap (bukram/sampul/hijau gelap) */
+body [class*="text-putih/35"],
+body [class*="text-putih/40"],
+body [class*="text-putih/45"],
+body .text-putih\/35,
+body .text-putih\/40,
+body .text-putih\/45 {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+body [class*="text-putih/50"],
+body [class*="text-putih/55"],
+body [class*="text-putih/60"],
+body .text-putih\/50,
+body .text-putih\/55,
+body .text-putih\/60 {
+  color: rgba(255, 255, 255, 0.88);
+}

@@ -1,0 +1,20 @@
+-- =====================================================================
+-- Skema basis data Sistem Presensi Desa Anabanua (MySQL 8) - bagian 5:
+-- selisih menit presensi.
+--
+-- Status (TERLAMBAT/PULANG_CEPAT) dinilai terhadap jadwal saat transaksi
+-- dicatat, sedangkan rekap menghitung ulang durasi dari jadwal yang berlaku
+-- kini. Bila jadwal diubah di tengah bulan, jumlah kejadian (status) dan
+-- total durasi bisa berbeda pendapat ("terlambat 1 kali = 0 menit").
+-- Menyimpan selisihnya sejak awal membuat keduanya memakai sumber yang sama.
+--
+-- Selisih menit terhadap ambang jadwal saat transaksi dicatat: positif =
+-- menit setelah ambang (terlambat / lebih kerja), negatif = menit sebelum
+-- ambang (pulang cepat), 0 = tepat waktu. Baris lama memakai nilai bawaan 0
+-- (fallback hitung ulang dari jadwal aktif tetap berlaku di usecase).
+--
+-- CATATAN: satu pernyataan per berkas migrasi - pelaksana migrasi Go
+-- (database/sql) tidak memahami DELIMITER/PROCEDURE/CALL multi-baris.
+-- Idempotensi dijamin pelacak schema_migrations (satu berkas = sekali jalan).
+-- =====================================================================
+ALTER TABLE presensi ADD COLUMN selisih_menit INT NOT NULL DEFAULT 0;

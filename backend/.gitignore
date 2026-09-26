@@ -1,0 +1,15 @@
+.env
+.env.*
+*.env
+!*.env.example
+bin/
+tmp/
+*.log
+*.exe
+*.test
+*.out
+*.db
+*.sqlite
+*.sqlite3
+coverage.out
+

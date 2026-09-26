@@ -1,0 +1,135 @@
+# Sistem Presensi & Monitoring Kedisiplinan Perangkat Desa Anabanua
+#
+# Empat layanan: MySQL, layanan wajah (Python), API (Go), dan antarmuka (Next.js).
+# Semua nilai yang bisa berubah antar-mesin ada di berkas .env (tidak di sini),
+# sehingga berkas ini aman masuk repositori.
+#
+# Port host (sengaja BUKAN 3000 — port itu sudah dipakai di mesin ini):
+#   antarmuka  127.0.0.1:3080
+#   API        127.0.0.1:8080
+#   layanan AI 127.0.0.1:8100 (hanya bind lokal — tidak pernah dibuka ke jaringan)
+#   MySQL      127.0.0.1:3307 (hanya bind lokal)
+#
+# Pemakaian:
+#   cp backend/.env.example backend/.env   # lalu isi
+#   cp ai-service/.env.example ai-service/.env
+#   cp frontend/.env.example frontend/.env
+#   docker compose up -d --build
+
+name: presensi-anabanua
+
+services:
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-time-zone=+08:00
+    ports:
+      # Hanya untuk keperluan pemeriksaan dari mesin ini; backend memakai
+      # jaringan internal compose (db:3306), bukan port ini.
+      - "127.0.0.1:3307:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./backend/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - mysqladmin ping -h 127.0.0.1 -u "$$MYSQL_USER" -p"$$MYSQL_PASSWORD" --silent
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+    networks:
+      - internal
+
+  ai:
+    build:
+      context: ./ai-service
+    restart: unless-stopped
+    env_file:
+      - ./ai-service/.env
+    environment:
+      APP_ENV: production
+      # Ditegakkan di dalam jaringan compose: layanan hanya dapat dijangkau
+      # oleh backend, bukan dari luar.
+      AI_HOST: 0.0.0.0
+      AI_PORT: "8100"
+    ports:
+      - "127.0.0.1:8100:8100"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - python -c "import urllib.request,os;urllib.request.urlopen('http://127.0.0.1:8100/healthz',timeout=3)"
+      interval: 15s
+      timeout: 6s
+      retries: 10
+      start_period: 30s
+    networks:
+      - internal
+
+  api:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      # Alamat di dalam jaringan compose menimpa nilai lokal di .env, supaya
+      # berkas .env yang sama tetap bisa dipakai untuk menjalankan tanpa Docker.
+      APP_ENV: production
+      HTTP_ADDR: "0.0.0.0:8080"
+      DB_HOST: db
+      DB_PORT: "3306"
+      AI_BASE_URL: http://ai:8100
+    ports:
+      - "127.0.0.1:8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080/api/kesehatan || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    volumes:
+      # Migrasi dibaca dari berkas repo, bukan salinan di image: migrasi baru
+      # langsung berlaku saat kontainer dinyalakan ulang tanpa membangun ulang
+      # image (image tetap memuat salinannya untuk pemakaian mandiri).
+      - ./backend/migrations:/app/migrations:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      ai:
+        condition: service_started
+    networks:
+      - internal
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        # Nilai ini ikut ter-embed ke bundel browser saat build, jadi harus
+        # berupa URL yang dapat dijangkau peramban — bukan nama layanan compose.
+        NEXT_PUBLIC_API_MODE: http
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8080/api}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "3080"
+      HOSTNAME: 0.0.0.0
+    ports:
+      - "127.0.0.1:3080:3080"
+    depends_on:
+      api:
+        condition: service_started
+    networks:
+      - internal
+
+volumes:
+  db-data:
+
+networks:
+  internal:
+    driver: bridge

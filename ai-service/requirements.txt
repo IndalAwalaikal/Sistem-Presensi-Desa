@@ -1,0 +1,13 @@
+fastapi>=0.115
+uvicorn[standard]>=0.32
+numpy>=2.0
+pillow>=10.4
+pydantic>=2.9
+
+# Mesin wajah sungguhan — ArcFace (buffalo_l/ResNet-50) lewat InsightFace.
+# insightface 2.x berupa wheel murni Python (tanpa kompiler) dan sudah
+# mendukung numpy 2.x; onnxruntime menjalankan inferensi di CPU.
+# Bila diinginkan tanpa model berat (pengembangan), pasang hanya paket di atas
+# dan setel FACE_PROVIDER=demo.
+insightface>=2.0
+onnxruntime>=1.19

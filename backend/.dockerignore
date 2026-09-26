@@ -1,0 +1,11 @@
+# Rahasia tidak boleh ikut ke dalam konteks build.
+.env
+.env.*
+!.env.example
+
+# Hasil build & berkas pengembangan lokal.
+bin/
+tmp/
+*.log
+*.test
+coverage.out

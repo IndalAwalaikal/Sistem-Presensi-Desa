@@ -1,0 +1,31 @@
+{
+  "name": "Presensi — Pemerintah Desa Anabanua",
+  "short_name": "Presensi Anabanua",
+  "description": "Sistem presensi dan monitoring kedisiplinan perangkat Desa Anabanua.",
+  "lang": "id",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0f3320",
+  "background_color": "#e6e7e0",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo-barru.png",
+      "sizes": "860x1046",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
